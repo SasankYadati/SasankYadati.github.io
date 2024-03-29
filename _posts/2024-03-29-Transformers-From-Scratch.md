@@ -1,5 +1,5 @@
 ---
-title: Writing a transformer (almost) from scratch [IN PROGRESS]
+title: [IN PROGRESS] Writing a transformer (almost) from scratch
 date: 2024-03-29 20:30:00 +0530
 categories: [AI, Deep Learning]
 tags: [deep learning, nlp, transformers]     # TAG names should always be lowercase
@@ -53,7 +53,8 @@ class PosEmbed(nn.Module):
         self.W_pos = nn.Parameter(t.empty((cfg.n_ctx, cfg.d_model)))
         nn.init.normal_(self.W_pos, std=self.cfg.init_range)
     
-    def forward(self, tokens:Int[Tensor, "batch pos"]) -> Float[Tensor, "batch pos d_model"]:
+    def forward(self, tokens:Int[Tensor, "batch pos"]) -> 
+    Float[Tensor, "batch pos d_model"]:
         b, p = tokens.shape
         positions = t.arange(0, p).repeat((b, 1))
         return self.W_pos[positions]
@@ -68,7 +69,8 @@ class LayerNorm(nn.Module):
         self.w = nn.Parameter(t.ones(cfg.d_model))
         self.b = nn.Parameter(t.zeros(cfg.d_model))
 
-    def forward(self, residual: Float[Tensor, "batch pos d_model"]) -> Float[Tensor, "batch pos d_model"]:
+    def forward(self, residual: Float[Tensor, "batch pos d_model"]) -> 
+    Float[Tensor, "batch pos d_model"]:
         mean = t.mean(residual, dim=-1, keepdim=True)
         variance = t.var(residual, dim=-1, keepdim=True, unbiased=False)
         out = (residual - mean) / ((variance + self.eps) ** (0.5))
@@ -105,27 +107,51 @@ class Attention(nn.Module):
         self.register_buffer("EPSILON", t.tensor(-1e5, dtype=t.float32, device=device))
 
 
-    def forward(self, normalized_resid_pre: Float[Tensor, "batch pos d_model"]) -> Float[Tensor, "batch pos d_model"]:
+    def forward(self, normalized_resid_pre: Float[Tensor, "batch pos d_model"]) -> 
+    Float[Tensor, "batch pos d_model"]:
         # b - num batches, s - seq len, e - d_model, n - n_heads, h - d_heads
 
-        keys = einops.einsum(normalized_resid_pre, self.W_K, "b s e, n e h -> b s n h") + self.b_K
-        queries = einops.einsum(normalized_resid_pre, self.W_Q, "b s e, n e h -> b s n h") + self.b_Q
+        keys = einops.einsum(
+            normalized_resid_pre, self.W_K, 
+            "b s e, n e h -> b s n h"
+        ) + self.b_K
+        queries = einops.einsum(
+            normalized_resid_pre, self.W_Q, 
+            "b s e, n e h -> b s n h"
+        ) + self.b_Q
         
-        attn_scores = einops.einsum(queries, keys, "b s1 n h, b s2 n h -> b n s1 s2")
+        attn_scores = einops.einsum(
+            queries, keys, 
+            "b s1 n h, b s2 n h -> b n s1 s2"
+        )
         attn_scores /= self.cfg.d_head ** 0.5
         attn_scores = self.apply_causal_mask(attn_scores)
         
         attn_probs = attn_scores.softmax(dim=-1)
-        values = einops.einsum(normalized_resid_pre, self.W_V, "b s e, n e h -> b s n h") + self.b_V
-        z = einops.einsum(attn_probs, values, "b n s1 s2, b s2 n h -> b s1 n h")
+        values = einops.einsum(
+            normalized_resid_pre, self.W_V, 
+            "b s e, n e h -> b s n h"
+        ) + self.b_V
+        
+        z = einops.einsum(
+            attn_probs, values, 
+            "b n s1 s2, b s2 n h -> b s1 n h"
+        )
 
-        result = einops.einsum(z, self.W_O, "b s n h, n h e -> b s n e") 
-        attn_out = einops.reduce(result, "b s n e -> b s e", 'sum') + self.b_O
+        result = einops.einsum(
+            z, self.W_O, 
+            "b s n h, n h e -> b s n e"
+        ) 
+        attn_out = einops.reduce(
+            result, 
+            "b s n e -> b s e", 'sum'
+        ) + self.b_O
 
         return attn_out
 
 
-    def apply_causal_mask(self, attn_scores: Float[Tensor, "batch n_heads query_pos key_pos"]) -> Float[Tensor, "batch n_heads query_pos key_pos"]:
+    def apply_causal_mask(self, attn_scores: Float[Tensor, "batch n_heads query_pos key_pos"]) -> 
+    Float[Tensor, "batch n_heads query_pos key_pos"]:
         sq, sk = attn_scores.shape[-2], attn_scores.shape[-1]
         ones = t.ones(sq, sk, device=attn_scores.device)
         mask = t.triu(ones, diagonal=1).bool() 
@@ -174,7 +200,8 @@ class TransformerBlock(nn.Module):
         self.ln2 = LayerNorm(cfg)
         self.mlp = MLP(cfg)
 
-    def forward(self, resid_pre: Float[Tensor, "batch pos d_model"]) -> Float[Tensor, "batch pos d_model"]:
+    def forward(self, resid_pre: Float[Tensor, "batch pos d_model"]) -> 
+    Float[Tensor, "batch pos d_model"]:
         x = self.attn(self.ln1(resid_pre)) + resid_pre
         return x + self.mlp(self.ln2(x))
 ```
@@ -190,7 +217,8 @@ class Unembed(nn.Module):
         nn.init.normal_(self.W_U, std=self.cfg.init_range)
         self.b_U = nn.Parameter(t.zeros((cfg.d_vocab), requires_grad=False))
 
-    def forward(self, normalized_resid_final: Float[Tensor, "batch pos d_model"]) -> Float[Tensor, "batch pos d_vocab"]:
+    def forward(self, normalized_resid_final: Float[Tensor, "batch pos d_model"]) -> 
+    Float[Tensor, "batch pos d_vocab"]:
         out = einops.einsum(
             normalized_resid_final, self.W_U, 
             "batch pos d_model, d_model d_vocab -> batch pos d_vocab"
