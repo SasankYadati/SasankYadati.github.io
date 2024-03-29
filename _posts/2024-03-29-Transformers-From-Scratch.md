@@ -12,7 +12,7 @@ img_path: /assets/img/2024-03-29-Transformers-From-Scratch/
 ## Transformers
 <b>Transformers</b> model sequences. They have had tremendous success, especially in modelling language. Given a sequence they predict the next <b>token</b> in the sequence. We sample incrementally to further generate more of the sequence.
 
-The task of the transformer is to predict the next token in the sequnce. We will call these predictions <b>logits</b>.
+The task of the transformer is to predict the next token in the sequnce. We will call these predictions <b>logits</b> and each logit is a vector where each entry corresponds to a unique token in the <b>vocabulary</b>.
 
 
 ![Input and Output in Transformer](tf-01.jpg)
