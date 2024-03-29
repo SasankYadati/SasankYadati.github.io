@@ -9,7 +9,7 @@ img_path: /assets/img/2024-03-29-Transformers-From-Scratch/
 ---
 > I'm primarily writing this to consolidate my understanding. The code referred to in this post can be found at [my GitHub](https://github.com/SasankYadati/mech-interp/tree/main/transformer)
 
-# Transformers
+## Transformers
 <b>Transformers</b> model sequences. They have had tremendous success, especially in modelling language. Given a sequence they predict the next <b>token</b> in the sequence. We sample incrementally to further generate more of the sequence.
 
 The task of the transformer is to predict the next token in the sequnce. We will call these predictions <b>logits</b>.
@@ -17,7 +17,7 @@ The task of the transformer is to predict the next token in the sequnce. We will
 
 ![Input and Output in Transformer](tf-01.jpg)
 
-## Tokens and Vocabulary
+### Tokens and Vocabulary
 Tokens are the basic units of the sequences we are modelling. The set of all tokens is called vocabulary. 
 
 If we were to model English language, we have different choices possible for the vocabulary. One basic idea is to have the set of ASCII characters as our vocabulary. This is a very concise set but it is too simplistic - it doesn't capture the fact that some sequences of characters more meaningful than the rest. In fact most combinations are meaningless. Another idea would be to use a standard English dictionary but this doesn't capture punctuation, urls etc.
@@ -27,9 +27,9 @@ What really turned out to be successful is [Byte-Pair encoding](https://www.yout
 In this post, we will use a pre-built tokenizer and focus on the transformer.
 
 
-# Components of a Transformer
+## Components of a Transformer
 
-## Embedding
+### Embedding
 
 ```python
 class Embed(nn.Module):
@@ -43,7 +43,7 @@ class Embed(nn.Module):
         return self.W_E[tokens]
 ```
 
-## Position Embedding
+### Position Embedding
 
 ```python
 class PosEmbed(nn.Module):
@@ -60,7 +60,7 @@ class PosEmbed(nn.Module):
         return self.W_pos[positions]
 ```
 
-## Layer Norm
+### Layer Norm
 ```python
 class LayerNorm(nn.Module):
     def __init__(self, cfg:Config):
@@ -77,7 +77,7 @@ class LayerNorm(nn.Module):
         return out * self.w + self.b
 ```
 
-## Self-Attention
+### Self-Attention
 
 ```python
 class Attention(nn.Module):
@@ -159,7 +159,7 @@ class Attention(nn.Module):
         return attn_scores
 ```
 
-## Multi Layer Perceptron
+### Multi Layer Perceptron
 
 ```python
 class MLP(nn.Module):
@@ -188,7 +188,7 @@ class MLP(nn.Module):
         return out
 ```
 
-## Transformer Block
+### Transformer Block
 
 ```python
 class TransformerBlock(nn.Module):
@@ -206,7 +206,7 @@ class TransformerBlock(nn.Module):
         return x + self.mlp(self.ln2(x))
 ```
 
-## Unembedding
+### Unembedding
 
 ```python
 class Unembed(nn.Module):
@@ -226,4 +226,4 @@ class Unembed(nn.Module):
         return out
 ```
 
-# Training
+## Training
