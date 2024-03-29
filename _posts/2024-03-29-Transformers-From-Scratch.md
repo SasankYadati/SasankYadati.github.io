@@ -1,5 +1,5 @@
 ---
-title: <IN PROGRESS> Writing a transformer (almost) from scratch
+title: (IN PROGRESS) Writing a transformer (almost) from scratch
 date: 2024-03-29 20:30:00 +0530
 categories: [AI, Deep Learning]
 tags: [deep learning, nlp, transformers]     # TAG names should always be lowercase
