@@ -1,6 +1,6 @@
 ---
 title: Enumerability
-date: 2023-06-25 02:30:00 +0530
+date: 2023-10-23 12:30:00 +0530
 categories: [Math, Computation]
 tags: [math, computation, sets]     # TAG names should always be lowercase
 math: true
